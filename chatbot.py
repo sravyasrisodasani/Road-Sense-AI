@@ -1,4 +1,105 @@
-def get_response(user_input):
+"""
+RoadSoS AI Chatbot
+- Primary: Google Gemini API (free, conversational, context-aware)
+- Fallback: Keyword-based logic (works fully offline, no API needed)
+"""
+
+import os
+import json
+import re
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# ── Gemini AI Response ────────────────────────────────────────────────────────
+
+GEMINI_SYSTEM_PROMPT = """You are RoadSoS, an AI emergency assistant for road accidents.
+Your job is to give FAST, CLEAR, life-saving first aid guidance.
+
+Rules:
+- Always respond in JSON format exactly as shown below
+- Be concise — steps must be short and actionable (max 10 words each)
+- Always recommend calling emergency services
+- Classify severity: "critical" (life-threatening), "first_aid" (urgent but stable), "emergency" (accident scene), "services" (needs hospital/ambulance info), "unknown"
+- Max 6 steps
+- The "tip" must be one short sentence
+
+Response format (strict JSON, nothing else):
+{
+  "type": "critical|first_aid|emergency|services|unknown",
+  "title": "Short title with emoji",
+  "steps": ["step 1", "step 2", "step 3"],
+  "tip": "One short tip sentence"
+}
+
+Examples of user inputs: "heavy bleeding", "person unconscious", "car crash on highway",
+"someone is choking", "burn injury", "broken leg", "head injury", "shock"
+"""
+
+
+def _get_gemini_response(user_input: str) -> dict | None:
+    """Call Gemini API. Returns parsed dict or None on failure."""
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        return None
+
+    try:
+        import requests
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"gemini-1.5-flash:generateContent?key={api_key}"
+        )
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": (
+                                f"{GEMINI_SYSTEM_PROMPT}\n\n"
+                                f"User emergency: {user_input}"
+                            )
+                        }
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.2,
+                "maxOutputTokens": 512,
+                "responseMimeType": "application/json"
+            }
+        }
+        resp = requests.post(url, json=payload, timeout=8)
+        if resp.status_code != 200:
+            return None
+
+        data = resp.json()
+        text = (
+            data.get("candidates", [{}])[0]
+                .get("content", {})
+                .get("parts", [{}])[0]
+                .get("text", "")
+        )
+        if not text:
+            return None
+
+        # Strip markdown code fences if present
+        text = re.sub(r"```(?:json)?", "", text).strip()
+        parsed = json.loads(text)
+
+        # Validate required keys
+        if all(k in parsed for k in ("type", "title", "steps", "tip")):
+            return parsed
+
+    except Exception:
+        pass
+
+    return None
+
+
+# ── Keyword Fallback ──────────────────────────────────────────────────────────
+
+def _keyword_response(user_input: str) -> dict:
+    """Original keyword-based logic — fully offline."""
     text = user_input.lower().strip()
 
     severe = any(w in text for w in [
@@ -156,16 +257,39 @@ def get_response(user_input):
                 "🏥 Use 'Find Nearby Services' button for live results."],
             "tip": "112 works even without a SIM card or network balance."}
 
-    else:
-        return {"type": "unknown", "title": "🤔 Could Not Identify Emergency",
-            "steps": ["Try describing with keywords like:",
-                "→ 'bleeding' or 'heavy bleeding'",
-                "→ 'unconscious' or 'not responding'",
-                "→ 'fracture' or 'broken bone'",
-                "→ 'burn' or 'fire'",
-                "→ 'choking' or 'can't breathe'",
-                "→ 'head injury' or 'concussion'",
-                "→ 'shock' or 'pale and shaking'",
-                "→ 'accident' or 'crash'",
-                "Or use the quick action buttons above."],
-            "tip": "For any emergency, call 112 immediately — don't wait."}
+    return {"type": "unknown", "title": "🤔 Could Not Identify Emergency",
+        "steps": ["Try describing with keywords like:",
+            "→ 'bleeding' or 'heavy bleeding'",
+            "→ 'unconscious' or 'not responding'",
+            "→ 'fracture' or 'broken bone'",
+            "→ 'burn' or 'fire'",
+            "→ 'choking' or 'can't breathe'",
+            "→ 'head injury' or 'concussion'",
+            "→ 'shock' or 'pale and shaking'",
+            "→ 'accident' or 'crash'",
+            "Or use the quick action buttons above."],
+        "tip": "For any emergency, call 112 immediately — don't wait."}
+
+
+# ── Main Entry Point ──────────────────────────────────────────────────────────
+
+def get_response(user_input: str, use_ai: bool = True) -> dict:
+    """
+    Get emergency response for user input.
+    Tries Gemini AI first, falls back to keyword logic.
+    Returns a dict with: type, title, steps, tip, ai_powered (bool)
+    """
+    if use_ai:
+        ai_result = _get_gemini_response(user_input)
+        if ai_result:
+            ai_result["ai_powered"] = True
+            return ai_result
+
+    result = _keyword_response(user_input)
+    result["ai_powered"] = False
+    return result
+
+
+def is_gemini_configured() -> bool:
+    """Check if Gemini API key is set."""
+    return bool(os.getenv("GEMINI_API_KEY", "").strip())

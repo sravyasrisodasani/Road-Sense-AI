@@ -13,7 +13,7 @@ def format_number(number: str) -> str:
         number = "+91" + number
     return number
 
-def send_sos(contacts: list, location: str) -> dict:
+def send_sos(contacts: list, location: str, custom_message: str = None) -> dict:
     """
     Sends SOS SMS to multiple contacts via Twilio.
     Returns {"success": True/False, "sent": [...], "failed": [...]}
@@ -29,7 +29,7 @@ def send_sos(contacts: list, location: str) -> dict:
     if not formatted:
         return {"success": False, "error": "No valid contact numbers provided."}
 
-    message_body = (
+    message_body = custom_message or (
         f"🚨 EMERGENCY ALERT 🚨\n"
         f"I need immediate help!\n"
         f"Location: {location}\n"

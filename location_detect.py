@@ -1,55 +1,68 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import requests
 
-def render_geolocation_widget():
+
+def get_location_from_ip() -> str:
+    """Get approximate location from IP address. Works on PC without GPS."""
+    try:
+        res = requests.get("https://ipapi.co/json/", timeout=5)
+        data = res.json()
+        city    = data.get("city", "")
+        region  = data.get("region", "")
+        country = data.get("country_name", "")
+        lat     = data.get("latitude")
+        lon     = data.get("longitude")
+        if lat and lon:
+            return f"{lat},{lon}"
+        if city:
+            return f"{city}, {region}, {country}".strip(", ")
+    except Exception:
+        pass
+    return ""
+
+
+def render_auto_location():
+    """
+    Tries GPS first (mobile/HTTPS), falls back silently.
+    Saves coords to URL param on success.
+    """
     components.html("""
-        <script>
-        function detectLocation() {
-            const statusEl = document.getElementById("geo-status");
-            if (!navigator.geolocation) {
-                statusEl.innerText = "Geolocation not supported by your browser.";
-                statusEl.style.color = "orange"; return;
-            }
-            statusEl.innerText = "Detecting your location...";
-            statusEl.style.color = "#888";
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const lat = position.coords.latitude.toFixed(6);
-                    const lon = position.coords.longitude.toFixed(6);
-                    const coords = lat + "," + lon;
-                    const url = new URL(window.parent.location.href);
-                    url.searchParams.set("geo_coords", coords);
-                    window.parent.history.replaceState({}, "", url);
-                    statusEl.innerText = "✅ Location detected: " + lat + ", " + lon;
-                    statusEl.style.color = "green";
-                    document.getElementById("geo-coords").value = coords;
-                },
-                function(error) {
-                    const msgs = {1:"Permission denied. Enter manually.",
-                                  2:"Location unavailable. Enter manually.",
-                                  3:"Request timed out. Enter manually."};
-                    statusEl.innerText = "⚠️ " + (msgs[error.code] || "Unknown error.");
-                    statusEl.style.color = "orange";
-                },
-                { timeout: 8000, maximumAge: 60000 }
-            );
+    <script>
+    (function(){
+        var statusEl = document.getElementById('loc-status');
+        if(!navigator.geolocation){
+            if(statusEl) statusEl.innerText = '📍 Using IP location';
+            return;
         }
-        window.onload = detectLocation;
-        </script>
-        <div style="font-family:sans-serif;font-size:13px;padding:4px 0;">
-            <span id="geo-status" style="color:#888;">Requesting location...</span><br/>
-            <input id="geo-coords" type="text" readonly
-                style="margin-top:6px;width:100%;padding:4px;font-size:12px;
-                       border:1px solid #ccc;border-radius:4px;background:#f9f9f9;"
-                placeholder="Coordinates will appear here"/>
-            <div style="margin-top:4px;color:#aaa;font-size:11px;">
-                Copy coordinates into the location box above if auto-fill doesn't work.
-            </div>
-        </div>
-    """, height=90)
+        navigator.geolocation.getCurrentPosition(
+            function(pos){
+                var lat = pos.coords.latitude.toFixed(6);
+                var lon = pos.coords.longitude.toFixed(6);
+                var coords = lat + ',' + lon;
+                var url = new URL(window.parent.location.href);
+                if(url.searchParams.get('geo_coords') !== coords){
+                    url.searchParams.set('geo_coords', coords);
+                    window.parent.location.href = url.toString();
+                } else {
+                    if(statusEl){
+                        statusEl.innerText = '✅ GPS: ' + lat + ', ' + lon;
+                        statusEl.style.color = '#22C55E';
+                    }
+                }
+            },
+            function(err){ /* silent fail — IP location used as fallback */ },
+            { timeout: 6000, maximumAge: 60000, enableHighAccuracy: true }
+        );
+    })();
+    </script>
+    <div id="loc-status"
+         style="font-family:sans-serif;font-size:12px;color:#64748B;padding:4px 0;">
+        📡 Detecting GPS location...
+    </div>
+    """, height=28)
 
 
 def get_coords_from_url() -> str | None:
-    params = st.query_params
-    coords = params.get("geo_coords")
+    coords = st.query_params.get("geo_coords")
     return coords if coords else None

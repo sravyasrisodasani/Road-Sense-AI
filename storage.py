@@ -3,7 +3,18 @@ import os
 
 STORAGE_FILE = os.path.join(os.path.dirname(__file__), "user_data.json")
 
-DEFAULT_DATA = {"location": "", "contact1": "", "contact2": "", "contact3": ""}
+DEFAULT_DATA = {
+    "location": "",
+    "user_name": "",
+    "user_phone": "",
+    "contact1": "",
+    "contact2": "",
+    "contact3": "",
+    "blood_group": "",
+    "allergies": "",
+    "medical_conditions": "",
+    "lang": "en",
+}
 
 def load_user_data() -> dict:
     if os.path.exists(STORAGE_FILE):

@@ -35,32 +35,35 @@ def geocode_location(location: str):
 
 
 SERVICE_CONFIG = {
-    "Hospitals": {
+    "Trauma Centres": {
         "icon": "🏥",
-        "query_tags": ['["amenity"="hospital"]', '["amenity"="clinic"]',
-                       '["amenity"="doctors"]', '["amenity"="trauma_centre"]'],
-        "emergency_number": "108 (Ambulance)", "color": "#e53935",
-        "keywords": ["hospital", "medical", "clinic", "health", "care", "emergency", "trauma"]
+        "query_tags": ['["amenity"="trauma_centre"]', '["amenity"="hospital"]["emergency"="yes"]',
+                       '["amenity"="hospital"]["trauma"="yes"]', '["amenity"="hospital"]',
+                       '["healthcare"="hospital"]', '["amenity"="clinic"]'],
+        "emergency_number": "108 (Ambulance)", "color": "#FF4D4F",
+        "keywords": ["trauma", "hospital", "emergency", "medical", "care", "icu", "casualty"]
     },
     "Ambulance": {
         "icon": "🚑",
         "query_tags": ['["emergency"="ambulance_station"]',
                        '["amenity"="ambulance_station"]', '["amenity"="hospital"]'],
-        "emergency_number": "108", "color": "#e53935",
+        "emergency_number": "108", "color": "#FF4D4F",
         "keywords": ["ambulance", "hospital", "emergency", "rescue"]
     },
     "Police": {
         "icon": "🚔",
         "query_tags": ['["amenity"="police"]'],
-        "emergency_number": "100", "color": "#1e88e5",
+        "emergency_number": "100", "color": "#2EC5FF",
         "keywords": ["police", "station", "thana", "cop"]
     },
-    "Towing": {
+    "Vehicle Rescue": {
         "icon": "🚛",
         "query_tags": ['["shop"="car_repair"]', '["amenity"="vehicle_inspection"]',
-                       '["shop"="vehicle"]', '["highway"="services"]'],
+                       '["emergency"="rescue"]', '["emergency"="disaster_response"]',
+                       '["shop"="vehicle"]', '["highway"="services"]',
+                       '["amenity"="rescue_station"]'],
         "emergency_number": "1033 (Highway Help)", "color": "#fb8c00",
-        "keywords": ["tow", "recovery", "rescue", "vehicle", "car", "auto"]
+        "keywords": ["tow", "recovery", "rescue", "vehicle", "car", "auto", "breakdown"]
     },
     "Puncture/Repair": {
         "icon": "🔧",
@@ -101,19 +104,19 @@ def _build_query(tags, lat, lon, radius):
     for tag in tags:
         node_ways += f'node{tag}(around:{radius},{lat},{lon});\n'
         node_ways += f'way{tag}(around:{radius},{lat},{lon});\n'
-    return f"[out:json][timeout:15];\n(\n{node_ways});\nout center 20;"
+    return f"[out:json][timeout:15];\n(\n{node_ways});\nout center 30;"
 
 
-def fetch_services(location: str, service_type: str, radius_m: int = 8000) -> dict:
+def fetch_services(location: str, service_type: str, radius_m: int = 10000) -> dict:
     if service_type in ("Ambulance", "Towing", "Puncture/Repair"):
-        radius_m = 12000
+        radius_m = 15000
 
     coords = geocode_location(location)
     if not coords:
         return {"success": False, "error": f"Could not find location: '{location}'."}
 
     lat, lon = coords["lat"], coords["lon"]
-    config = SERVICE_CONFIG.get(service_type, SERVICE_CONFIG["Hospitals"])
+    config = SERVICE_CONFIG.get(service_type, SERVICE_CONFIG["Trauma Centres"])
     tags = config["query_tags"]
     keywords = config.get("keywords", [])
 
@@ -161,7 +164,7 @@ def fetch_services(location: str, service_type: str, radius_m: int = 8000) -> di
             "call_link": f"tel:{phone.replace(' ', '').replace('-', '')}" if phone else ""
         })
 
-    places = sorted(places, key=lambda x: (-x["score"], x["distance_km"]))[:6]
+    places = sorted(places, key=lambda x: (-x["score"], x["distance_km"]))[:15]
 
     if not places:
         return {"success": False,

@@ -1,4 +1,11 @@
 streamlit
+
 twilio
+
 python-dotenv
+
 requests
+
+reportlab
+
+SpeechRecognition 

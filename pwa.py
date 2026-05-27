@@ -1,3 +1,4 @@
+
 """
 PWA (Progressive Web App) support for RoadSoS.
 Injects web app manifest and service worker registration into the Streamlit page.

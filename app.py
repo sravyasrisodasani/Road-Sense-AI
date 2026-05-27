@@ -53,57 +53,79 @@ section[data-testid="stSidebar"] {
 }
 .block-container { padding: 1.5rem 2rem !important; max-width: 100% !important; }
 
-/* ── Section Headers ── */
+/* ── Section Headers — bigger, more visible ── */
 .section-header {
-    font-size: 0.68rem; font-weight: 700; color: #64748B;
-    text-transform: uppercase; letter-spacing: 2.5px;
-    margin: 28px 0 14px 0;
+    font-size: 0.72rem; font-weight: 800; color: #94A3B8;
+    text-transform: uppercase; letter-spacing: 3px;
+    margin: 24px 0 12px 0;
+    display: flex; align-items: center; gap: 8px;
 }
 
-/* ── Hero ── */
+/* ── Hero — richer with glow ── */
 .hero-box {
-    background: linear-gradient(135deg, #0F1929 0%, #111827 100%);
-    border: 1px solid #1E2A47; border-radius: 16px;
-    padding: 24px 28px; margin-bottom: 24px;
+    background: linear-gradient(135deg, #0D1B2E 0%, #0F1929 50%, #111827 100%);
+    border: 1px solid #1E2A47; border-radius: 20px;
+    padding: 28px 32px; margin-bottom: 20px;
     position: relative; overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 60px rgba(255,59,59,0.05);
 }
 .hero-box::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
     background: linear-gradient(90deg, #FF3B3B 0%, #F97316 25%, #00C2FF 60%, #22C55E 100%);
+    background-size: 200% 100%;
+    animation: gradientShift 4s ease infinite;
 }
-.hero-title { color: #fff; font-size: 1.7rem; font-weight: 800; margin: 0; }
+.hero-box::after {
+    content: ''; position: absolute; top: -50%; right: -10%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,59,59,0.06) 0%, transparent 70%);
+    pointer-events: none;
+}
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.hero-title { color: #fff; font-size: 1.8rem; font-weight: 900; margin: 0; letter-spacing: -0.5px; }
 .hero-sub { color: #64748B; font-size: 0.88rem; margin: 6px 0 0 0; }
 .status-dot {
-    display: inline-block; width: 8px; height: 8px;
+    display: inline-block; width: 9px; height: 9px;
     background: #22C55E; border-radius: 50%; margin-right: 6px;
     box-shadow: 0 0 10px rgba(34,197,94,0.8);
     animation: pulse 2s infinite;
 }
 @keyframes pulse {
     0%, 100% { box-shadow: 0 0 6px rgba(34,197,94,0.6); }
-    50% { box-shadow: 0 0 14px rgba(34,197,94,1); }
+    50% { box-shadow: 0 0 16px rgba(34,197,94,1); }
 }
 
-/* ── Section card tints ── */
+/* ── Section card tints — more visible ── */
 .section-emergency-input {
-    background: rgba(0,194,255,0.04);
-    border: 1px solid rgba(0,194,255,0.12);
-    border-radius: 16px; padding: 20px; margin-bottom: 20px;
+    background: linear-gradient(135deg, rgba(0,194,255,0.06), rgba(0,153,255,0.03));
+    border: 1px solid rgba(0,194,255,0.18);
+    border-left: 3px solid #00C2FF;
+    border-radius: 16px; padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 4px 20px rgba(0,194,255,0.05);
 }
 .section-response {
-    background: rgba(139,92,246,0.05);
-    border: 1px solid rgba(139,92,246,0.15);
-    border-radius: 16px; padding: 20px; margin-bottom: 20px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.07), rgba(109,40,217,0.03));
+    border: 1px solid rgba(139,92,246,0.2);
+    border-left: 3px solid #8B5CF6;
+    border-radius: 16px; padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 4px 20px rgba(139,92,246,0.06);
 }
 .section-quick-actions {
-    background: rgba(255,59,59,0.03);
-    border: 1px solid #1E2A47;
-    border-radius: 16px; padding: 20px; margin-bottom: 20px;
+    background: linear-gradient(135deg, rgba(255,59,59,0.05), rgba(249,115,22,0.02));
+    border: 1px solid rgba(255,59,59,0.15);
+    border-left: 3px solid #FF3B3B;
+    border-radius: 16px; padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 4px 20px rgba(255,59,59,0.04);
 }
 .section-report {
-    background: rgba(30,42,71,0.6);
+    background: linear-gradient(135deg, rgba(30,42,71,0.8), rgba(15,25,41,0.6));
     border: 1px solid #1E2A47;
-    border-radius: 16px; padding: 20px; margin-bottom: 20px;
+    border-left: 3px solid #64748B;
+    border-radius: 16px; padding: 20px; margin-bottom: 16px;
 }
 
 /* ── All Buttons base ── */
@@ -463,17 +485,34 @@ offline_mode = st.session_state.low_network or not st.session_state.online
 # --- Hero ---
 st.markdown(f"""
 <div class="hero-box">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-        <div>
-            <div class="hero-title">🚨 RoadSoS</div>
-            <div style="color:#E2E8F0;font-size:1rem;font-weight:500;margin:2px 0 4px 0;">Emergency Assistant</div>
-            <div class="hero-sub">Instant help during road accidents &bull; First Aid &bull; Nearby Services &bull; SOS Alerts</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div style="display:flex;align-items:center;gap:16px;">
+            <div style="
+                background:linear-gradient(135deg,#FF3B3B22,#FF3B3B11);
+                border:1px solid #FF3B3B44;border-radius:16px;
+                padding:14px;font-size:2rem;line-height:1;
+                box-shadow:0 0 20px rgba(255,59,59,0.2);
+            ">🚨</div>
+            <div>
+                <div class="hero-title">RoadSoS</div>
+                <div style="color:#94A3B8;font-size:0.95rem;font-weight:500;margin:3px 0 6px 0;letter-spacing:0.3px;">Emergency Assistant</div>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <span style="background:rgba(255,59,59,0.12);color:#FF6B6B;font-size:0.7rem;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,59,59,0.2);">🏥 First Aid</span>
+                    <span style="background:rgba(0,194,255,0.12);color:#00C2FF;font-size:0.7rem;padding:3px 10px;border-radius:20px;border:1px solid rgba(0,194,255,0.2);">🗺️ Nearby Services</span>
+                    <span style="background:rgba(139,92,246,0.12);color:#A78BFA;font-size:0.7rem;padding:3px 10px;border-radius:20px;border:1px solid rgba(139,92,246,0.2);">🤖 AI Guided</span>
+                    <span style="background:rgba(34,197,94,0.12);color:#22C55E;font-size:0.7rem;padding:3px 10px;border-radius:20px;border:1px solid rgba(34,197,94,0.2);">📴 Works Offline</span>
+                </div>
+            </div>
         </div>
         <div style="text-align:right;">
-            <div style="font-size:0.72rem;color:#22C55E;font-weight:700;letter-spacing:1.5px;">
-                <span class="status-dot"></span>SYSTEM ACTIVE
+            <div style="
+                background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);
+                border-radius:20px;padding:6px 14px;display:inline-block;
+            ">
+                <span class="status-dot"></span>
+                <span style="font-size:0.72rem;color:#22C55E;font-weight:700;letter-spacing:1.5px;">SYSTEM ACTIVE</span>
             </div>
-            <div style="font-size:0.65rem;color:#64748B;margin-top:2px;">All systems operational</div>
+            <div style="font-size:0.65rem;color:#64748B;margin-top:6px;">All systems operational</div>
         </div>
     </div>
 </div>
@@ -482,7 +521,10 @@ st.markdown(f"""
 # --- Quick Actions ---
 st.markdown("""
 <div class="section-quick-actions">
-<div class="section-header" style="margin-top:0;">⚡ QUICK ACTIONS</div>
+<div class="section-header" style="margin-top:0;">
+    <span style="display:inline-block;width:10px;height:10px;background:#FF3B3B;border-radius:50%;box-shadow:0 0 8px #FF3B3B;"></span>
+    ⚡ QUICK ACTIONS
+</div>
 """, unsafe_allow_html=True)
 
 # Colored quick action buttons using HTML — full color control
@@ -548,7 +590,10 @@ st.divider()
 # --- Voice + Chat Input ---
 st.markdown("""
 <div class="section-emergency-input">
-<div class="section-header" style="margin-top:0;">💬 DESCRIBE YOUR EMERGENCY</div>
+<div class="section-header" style="margin-top:0;">
+    <span style="display:inline-block;width:10px;height:10px;background:#00C2FF;border-radius:50%;box-shadow:0 0 8px #00C2FF;"></span>
+    💬 DESCRIBE YOUR EMERGENCY
+</div>
 """, unsafe_allow_html=True)
 
 # Voice transcript stored in session state
@@ -782,7 +827,10 @@ def do_sos(loc):
 # --- Response Area ---
 st.markdown("""
 <div class="section-response">
-<div class="section-header" style="margin-top:0;">📋 RESPONSE</div>
+<div class="section-header" style="margin-top:0;">
+    <span style="display:inline-block;width:10px;height:10px;background:#8B5CF6;border-radius:50%;box-shadow:0 0 8px #8B5CF6;"></span>
+    📋 RESPONSE
+</div>
 """, unsafe_allow_html=True)
 
 # --- Auto Emergency Mode (triggered by URL ?action=emergency) ---
@@ -800,7 +848,29 @@ if auto_emergency and not st.session_state.get("auto_emergency_fired"):
         st.warning("⚠️ No location saved. Please set your location first, then use the emergency shortcut.")
         st.query_params.clear()
 
+# Track which button was last pressed using session state
+# This ensures content stays visible when checkboxes/widgets are interacted with
 if accident_btn:
+    st.session_state["active_action"] = "accident"
+elif services_btn:
+    st.session_state["active_action"] = "services"
+elif sos_btn:
+    st.session_state["active_action"] = "sos"
+elif now_btn:
+    st.session_state["active_action"] = "now"
+elif emergency_btn:
+    st.session_state["active_action"] = "emergency"
+elif send_btn:
+    st.session_state["active_action"] = "chat"
+    st.session_state["last_chat_input"] = (
+        st.session_state.get("emergency_input", "").strip() or
+        _voice_prefill.strip() or
+        st.session_state.get("last_voice", "").strip()
+    )
+
+_action = st.session_state.get("active_action", "")
+
+if _action == "accident" or accident_btn:
     loc = check_location()
     if loc:
         st.error("🚨 **Accident Detected!**")
@@ -818,7 +888,7 @@ if accident_btn:
             st.markdown("#### 🗺️ Nearby Emergency Services")
             show_all_services(loc)
 
-elif services_btn:
+elif _action == "services" or services_btn:
     loc = check_location()
     if loc:
         service_tabs = st.tabs(["🏥 Trauma Centres","🚑 Ambulance","🚔 Police","🚛 Vehicle Rescue","🔧 Puncture/Repair","🏪 Showrooms"])
@@ -840,12 +910,12 @@ elif services_btn:
                         show_places(result["places"], config, loc)
                         render_map(result["lat"], result["lon"], result["places"], color=config["color"])
 
-elif sos_btn:
+elif _action == "sos" or sos_btn:
     loc = check_location()
     if loc:
         do_sos(loc)
 
-elif now_btn:
+elif _action == "now" or now_btn:
     loc = check_location()
     if loc:
         en = get_emergency_numbers(loc)

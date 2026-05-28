@@ -14,6 +14,8 @@ DEFAULT_DATA = {
     "allergies": "",
     "medical_conditions": "",
     "lang": "en",
+    "auto_crash_enabled": False,
+    "crash_threshold": 25.0,
 }
 
 def load_user_data() -> dict:

@@ -12,7 +12,7 @@ from storage import load_user_data, save_user_data
 from global_emergency import get_emergency_numbers
 from pwa import inject_pwa
 from translations import t, LANGUAGES
-from crash_detect import render_crash_detector
+from crash_detect import render_crash_detector, render_crash_settings
 from golden_hour import render_golden_hour_timer
 from severity import classify_severity, render_severity_badge
 from checklist import render_checklist
@@ -24,7 +24,12 @@ st.set_page_config(page_title="RoadSoS Emergency Assistant", page_icon="🚨", l
 inject_pwa()
 
 # Inject crash detection (accelerometer-based, mobile only)
-render_crash_detector()
+render_crash_detector(
+    enabled=st.session_state.get("auto_crash_enabled", False),
+    crash_threshold=st.session_state.get("crash_threshold", 25.0),
+    countdown_seconds=600,
+    alarm_interval_seconds=30,
+)
 
 # Inject browser storage loader (reads localStorage → URL params)
 inject_storage_loader()
@@ -310,6 +315,8 @@ if "storage_loaded" not in st.session_state:
     st.session_state.low_network       = False
     st.session_state.lang              = merged.get("lang", "en")
     st.session_state.storage_loaded    = True
+    st.session_state.auto_crash_enabled = merged.get("auto_crash_enabled", False)
+    st.session_state.crash_threshold    = float(merged.get("crash_threshold", 25.0))
     if not st.session_state.location:
         ip_loc = get_location_from_ip()
         if ip_loc:
@@ -331,6 +338,7 @@ if auto_coords:
 # When app icon is tapped (shortcut URL has ?action=emergency)
 # or user shares emergency link, auto-fire the emergency flow
 _url_action = st.query_params.get("action", "")
+_crash_auto = st.query_params.get("crash_auto", "0") == "1"
 auto_emergency = (_url_action == "emergency")
 
 # --- Voice input from URL param ---
@@ -476,6 +484,7 @@ box-shadow:0 0 10px {_color}15;">
     lang = st.session_state.get("lang","en")
     st.session_state.low_network = st.toggle("Low Network Mode", value=st.session_state.low_network)
     offline_mode = st.session_state.low_network or not st.session_state.online
+    render_crash_settings()
     st.caption("Tap numbers to call on mobile.")
 
 # Re-read lang after sidebar (in case user changed it)

@@ -25,7 +25,8 @@ def inject_storage_loader():
         // Keys to sync between localStorage and Streamlit
         var KEYS = [
             'user_name','user_phone','contact1','contact2','contact3',
-            'blood_group','allergies','medical_conditions','lang','location'
+            'blood_group','allergies','medical_conditions','lang','location',
+            'auto_crash_enabled','crash_threshold'
         ];
 
         var url = new URL(window.parent.location.href);
@@ -76,7 +77,8 @@ def load_from_url_params() -> dict:
     data = {}
     keys = [
         'user_name', 'user_phone', 'contact1', 'contact2', 'contact3',
-        'blood_group', 'allergies', 'medical_conditions', 'lang', 'location'
+        'blood_group', 'allergies', 'medical_conditions', 'lang', 'location',
+        'auto_crash_enabled', 'crash_threshold'
     ]
     params = st.query_params
     for key in keys:

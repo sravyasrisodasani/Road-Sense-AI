@@ -17,6 +17,8 @@ from golden_hour import render_golden_hour_timer
 from severity import classify_severity, render_severity_badge
 from checklist import render_checklist
 from browser_storage import inject_storage_loader, save_to_browser, load_from_url_params
+from guide import render_guide
+from ux_effects import inject_ux_effects
 
 st.set_page_config(page_title="RoadSoS Emergency Assistant", page_icon="🚨", layout="wide")
 
@@ -33,6 +35,9 @@ render_crash_detector(
 
 # Inject browser storage loader (reads localStorage → URL params)
 inject_storage_loader()
+
+# Inject UX effects (cursor glow, 3D cards, button ripple, input glow, shimmer)
+inject_ux_effects()
 
 st.markdown("""
 <style>
@@ -490,6 +495,15 @@ box-shadow:0 0 10px {_color}15;">
 # Re-read lang after sidebar (in case user changed it)
 lang = st.session_state.get("lang", "en")
 offline_mode = st.session_state.low_network or not st.session_state.online
+
+# --- Page Navigation ---
+_page = st.radio("", ["🚨 Emergency Assistant", "📖 How to Use Guide"],
+    horizontal=True, label_visibility="collapsed",
+    key="page_nav")
+
+if _page == "📖 How to Use Guide":
+    render_guide()
+    st.stop()
 
 # --- Hero ---
 st.markdown(f"""

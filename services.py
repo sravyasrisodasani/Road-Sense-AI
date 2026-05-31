@@ -86,16 +86,18 @@ def _run_overpass_query(query: str) -> tuple:
     mirrors = [
         "https://overpass-api.de/api/interpreter",
         "https://overpass.kumi.systems/api/interpreter",
+        "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
     ]
     last_err = ""
     for mirror in mirrors:
         try:
-            res = requests.post(mirror, data={"data": query}, timeout=15)
+            res = requests.post(mirror, data={"data": query}, timeout=20)
             if res.status_code == 200 and res.text.strip():
                 return res.json().get("elements", []), None
             last_err = f"Status {res.status_code}"
         except Exception as e:
             last_err = str(e)
+            continue
     return [], last_err
 
 
@@ -104,7 +106,7 @@ def _build_query(tags, lat, lon, radius):
     for tag in tags:
         node_ways += f'node{tag}(around:{radius},{lat},{lon});\n'
         node_ways += f'way{tag}(around:{radius},{lat},{lon});\n'
-    return f"[out:json][timeout:15];\n(\n{node_ways});\nout center 30;"
+    return f"[out:json][timeout:25];\n(\n{node_ways});\nout center 30;"
 
 
 def fetch_services(location: str, service_type: str, radius_m: int = 10000) -> dict:

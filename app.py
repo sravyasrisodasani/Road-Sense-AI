@@ -934,9 +934,10 @@ elif _action == "services" or services_btn:
                         render_map(result["lat"], result["lon"], result["places"], color=config["color"])
 
 elif _action == "sos" or sos_btn:
-    loc = check_location()
-    if loc:
-        do_sos(loc)
+    loc = st.session_state.location or "Unknown Location"
+    if not st.session_state.location:
+        st.warning("⚠️ Location not detected yet. SOS will be sent with 'Unknown Location'. Please save your location in the sidebar for better accuracy.")
+    do_sos(loc)
 
 elif _action == "now" or now_btn:
     loc = check_location()
